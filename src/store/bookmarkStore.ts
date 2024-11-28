@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { type Bookmark, type Category, type Tag, type PaginationState } from '../types/bookmark';
+import { bookmarkApi } from '../services/api';
 
 interface BookmarkStore {
   bookmarks: Bookmark[];
@@ -22,77 +23,24 @@ interface BookmarkStore {
   updateCategory: (id: string, category: Partial<Category>) => void;
 }
 
-// Simulated API call
-const fetchBookmarksFromAPI = async (
-  page: number,
-  limit: number,
-  filters: { search?: string; category?: string; tags: string[] }
-): Promise<{ bookmarks: Bookmark[]; hasMore: boolean }> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // Simulate paginated data
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  
-  // Generate mock data
-  const mockBookmarks: Bookmark[] = Array.from({ length: 50 }, (_, i) => ({
-    id: `bookmark-${startIndex + i}`,
-    title: `Bookmark ${startIndex + i + 1}`,
-    url: `https://example.com/bookmark-${startIndex + i + 1}`,
-    description: `Description for bookmark ${startIndex + i + 1}`,
-    favicon: `https://www.google.com/favicon.ico`,
-    category: { id: '1', name: 'Work', icon: 'briefcase' },
-    tags: [{ id: '1', name: 'Important', color: 'red' }],
-    createdAt: new Date(Date.now() - i * 86400000),
-  }));
-
-  const filteredBookmarks = mockBookmarks
-    .filter((bookmark) => {
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        if (!bookmark.title.toLowerCase().includes(searchLower) &&
-            !bookmark.description.toLowerCase().includes(searchLower)) {
-          return false;
-        }
-      }
-      if (filters.category && bookmark.category.id !== filters.category) {
-        return false;
-      }
-      if (filters.tags.length > 0) {
-        return filters.tags.every((tagId) =>
-          bookmark.tags.some((tag) => tag.id === tagId)
-        );
-      }
-      return true;
-    });
-
-  const paginatedBookmarks = filteredBookmarks.slice(startIndex, endIndex);
-  const hasMore = endIndex < filteredBookmarks.length;
-
-  return { bookmarks: paginatedBookmarks, hasMore };
-};
-
 export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   bookmarks: [],
   categories: [
     { id: '1', name: 'Work', icon: 'briefcase' },
-    { id: '2', name: 'Personal', icon: 'user' },
-    { id: '3', name: 'Learning', icon: 'book-open' },
-    { id: '4', name: 'Entertainment', icon: 'tv' },
+    { id: '2', name: 'Personal', icon: 'home' },
+    { id: '3', name: 'Learning', icon: 'book' },
   ],
   tags: [
     { id: '1', name: 'Important', color: 'red' },
-    { id: '2', name: 'Reference', color: 'blue' },
-    { id: '3', name: 'Tutorial', color: 'green' },
-    { id: '4', name: 'Read Later', color: 'purple' },
+    { id: '2', name: 'Read Later', color: 'blue' },
+    { id: '3', name: 'Reference', color: 'green' },
   ],
   searchQuery: '',
   selectedCategory: null,
   selectedTags: [],
   pagination: {
     page: 1,
-    limit: 12,
+    limit: 10,
     hasMore: true,
     isLoading: false,
   },
@@ -109,40 +57,64 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   setPagination: (pagination) => set({ pagination }),
 
   fetchBookmarks: async (page: number) => {
-    const state = get();
-    const { bookmarks: newBookmarks, hasMore } = await fetchBookmarksFromAPI(
-      page,
-      state.pagination.limit,
-      {
-        search: state.searchQuery,
-        category: state.selectedCategory || undefined,
-        tags: state.selectedTags,
-      }
-    );
+    try {
+      set((state) => ({
+        pagination: { ...state.pagination, isLoading: true },
+      }));
 
-    set((state) => ({
-      bookmarks: page === 1 ? newBookmarks : [...state.bookmarks, ...newBookmarks],
-      pagination: {
-        ...state.pagination,
-        page,
-        hasMore,
-        isLoading: false,
-      },
-    }));
+      const bookmarks = await bookmarkApi.getAll();
+
+      set({
+        bookmarks,
+        pagination: {
+          page,
+          limit: get().pagination.limit,
+          hasMore: bookmarks.length >= get().pagination.limit,
+          isLoading: false,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to fetch bookmarks:', error);
+      set((state) => ({
+        pagination: { ...state.pagination, isLoading: false },
+      }));
+    }
   },
 
-  addBookmark: (bookmark) =>
-    set((state) => ({ bookmarks: [...state.bookmarks, bookmark] })),
-  removeBookmark: (id) =>
-    set((state) => ({
-      bookmarks: state.bookmarks.filter((bookmark) => bookmark.id !== id),
-    })),
-  updateBookmark: (id, updatedBookmark) =>
-    set((state) => ({
-      bookmarks: state.bookmarks.map((bookmark) =>
-        bookmark.id === id ? { ...bookmark, ...updatedBookmark } : bookmark
-      ),
-    })),
+  addBookmark: async (bookmark) => {
+    try {
+      const newBookmark = await bookmarkApi.create(bookmark);
+      set((state) => ({
+        bookmarks: [...state.bookmarks, newBookmark],
+      }));
+    } catch (error) {
+      console.error('Failed to add bookmark:', error);
+    }
+  },
+
+  removeBookmark: async (id) => {
+    try {
+      await bookmarkApi.delete(id);
+      set((state) => ({
+        bookmarks: state.bookmarks.filter((b) => b.id !== id),
+      }));
+    } catch (error) {
+      console.error('Failed to remove bookmark:', error);
+    }
+  },
+
+  updateBookmark: async (id, updatedBookmark) => {
+    try {
+      const updated = await bookmarkApi.update(id, updatedBookmark);
+      set((state) => ({
+        bookmarks: state.bookmarks.map((b) =>
+          b.id === id ? { ...b, ...updated } : b
+        ),
+      }));
+    } catch (error) {
+      console.error('Failed to update bookmark:', error);
+    }
+  },
 
   addCategory: (category) =>
     set((state) => ({ categories: [...state.categories, category] })),

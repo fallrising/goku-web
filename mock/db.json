@@ -1,0 +1,53 @@
+{
+  "bookmarks": [
+    {
+      "id": "1",
+      "title": "GitHub",
+      "url": "https://github.com",
+      "description": "Where the world builds software",
+      "notes": "Great platform for code collaboration",
+      "favicon": "https://github.com/favicon.ico",
+      "category": {
+        "id": "1",
+        "name": "Development",
+        "icon": "code"
+      },
+      "tags": [
+        {
+          "id": "1",
+          "name": "coding",
+          "color": "#ff0000"
+        },
+        {
+          "id": "2",
+          "name": "git",
+          "color": "#00ff00"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Stack Overflow",
+      "url": "https://stackoverflow.com",
+      "description": "Where Developers Learn & Share",
+      "favicon": "https://stackoverflow.com/favicon.ico",
+      "category": {
+        "id": "1",
+        "name": "Development",
+        "icon": "code"
+      },
+      "tags": [
+        {
+          "id": "1",
+          "name": "coding",
+          "color": "#ff0000"
+        },
+        {
+          "id": "3",
+          "name": "qa",
+          "color": "#0000ff"
+        }
+      ]
+    }
+  ]
+}
