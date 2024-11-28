@@ -1,7 +1,5 @@
-import React from 'react';
 import { Edit, Trash, EyeOff, FolderOpen } from 'lucide-react';
 import { useBookmarkStore } from '../store/bookmarkStore';
-import { cn } from '../lib/utils';
 
 interface BookmarkMenuProps {
   bookmarkId: string;

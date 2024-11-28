@@ -1,4 +1,3 @@
-import React from 'react';
 import { Sidebar } from './components/Sidebar';
 import { SearchBar } from './components/SearchBar';
 import { BookmarkGrid } from './components/BookmarkGrid';

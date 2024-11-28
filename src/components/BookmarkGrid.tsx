@@ -1,4 +1,3 @@
-import React from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Loader2 } from 'lucide-react';
 import { BookmarkCard } from './BookmarkCard';
@@ -8,7 +7,7 @@ import { useBookmarkStore } from '../store/bookmarkStore';
 export function BookmarkGrid() {
   const { bookmarks } = useBookmarkStore();
   const { loadMore, pagination } = useBookmarkPagination();
-  const { ref, inView } = useInView({
+  const { ref } = useInView({
     threshold: 0,
     onChange: (inView) => {
       if (inView && !pagination.isLoading && pagination.hasMore) {

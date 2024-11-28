@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { ExternalLink, MoreVertical } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { MoreVertical } from 'lucide-react';
 import { type Bookmark } from '../types/bookmark';
 import { formatDate } from '../lib/utils';
 import { BookmarkMenu } from './BookmarkMenu';
