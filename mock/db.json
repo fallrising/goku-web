@@ -41,7 +41,7 @@
   "bookmarks": [
     {
       "id": "1",
-      "title": "Stack Overflow",
+      "title": "Stack Overflow_1",
       "url": "https://stackoverflow.com",
       "description": "Where developers learn and share knowledge",
       "category": {
@@ -53,16 +53,23 @@
         {
           "id": "1",
           "name": "Important",
-          "color": "#EF4444"
+          "color": "red"
         }
       ],
       "notes": [
         {
-          "id": "note1",
-          "title": "Stack Overflow Features",
-          "content": "New features in Stack Overflow",
-          "createdAt": 1722579772,
-          "updatedAt": 1722579772
+          "id": "85a4788e-afe2-453f-a1e2-0c64e62127e0",
+          "title": "first note",
+          "content": "the content",
+          "createdAt": 1732973533658,
+          "updatedAt": 1732973533658
+        },
+        {
+          "id": "77c274ab-279d-450b-aa46-422ccce30165",
+          "title": "second notes",
+          "content": "ttttt",
+          "createdAt": 1732973541373,
+          "updatedAt": 1732973541373
         }
       ],
       "customStyle": {
@@ -75,7 +82,7 @@
       },
       "favicon": "https://stackoverflow.com/favicon.ico",
       "createdAt": "2024-03-15T10:00:00.000Z",
-      "lastVisited": "2024-11-30T12:49:31.259Z",
+      "lastVisited": "2024-11-30T13:32:23.139Z",
       "updatedAt": 1722579772
     },
     {

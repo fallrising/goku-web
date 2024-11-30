@@ -146,7 +146,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
       selectedCategory: state.selectedCategory === id ? null : state.selectedCategory,
       // Update bookmarks to move them to uncategorized
       bookmarks: state.bookmarks.map((bookmark) =>
-        bookmark.category.id === id
+        bookmark.category?.id === id
           ? { ...bookmark, category: { id: 'uncategorized', name: 'Uncategorized', icon: 'folder' } }
           : bookmark
       ),
@@ -158,7 +158,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
       ),
       // Update bookmarks with the new category data
       bookmarks: state.bookmarks.map((bookmark) =>
-        bookmark.category.id === id
+        bookmark.category?.id === id
           ? { ...bookmark, category: { ...bookmark.category, ...updatedCategory } }
           : bookmark
       ),

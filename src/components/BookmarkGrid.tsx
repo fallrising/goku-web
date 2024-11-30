@@ -1,12 +1,17 @@
 import { useInView } from 'react-intersection-observer';
 import { Loader2 } from 'lucide-react';
 import { BookmarkCard } from './BookmarkCard';
+import { BookmarkEditor } from './BookmarkEditor';
 import { useBookmarkPagination } from '../hooks/useBookmarkPagination';
 import { useBookmarkStore } from '../store/bookmarkStore';
+import { type Bookmark } from '../types/bookmark';
+import { useState } from 'react';
 
 export function BookmarkGrid() {
   const { bookmarks } = useBookmarkStore();
   const { loadMore, pagination } = useBookmarkPagination();
+  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+  
   const { ref } = useInView({
     threshold: 0,
     onChange: (inView) => {
@@ -20,9 +25,20 @@ export function BookmarkGrid() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {bookmarks.map((bookmark) => (
-          <BookmarkCard key={bookmark.id} bookmark={bookmark} />
+          <BookmarkCard 
+            key={bookmark.id} 
+            bookmark={bookmark} 
+            onEdit={setEditingBookmark}
+          />
         ))}
       </div>
+
+      {editingBookmark && (
+        <BookmarkEditor 
+          bookmark={editingBookmark} 
+          onClose={() => setEditingBookmark(null)} 
+        />
+      )}
 
       {/* Loading indicator and infinite scroll trigger */}
       <div

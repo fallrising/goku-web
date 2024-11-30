@@ -12,6 +12,7 @@ interface BookmarkCardProps {
 export function BookmarkCard({ bookmark, onEdit }: BookmarkCardProps) {
   const { removeBookmark } = useBookmarkStore();
   const [showNotes, setShowNotes] = React.useState(false);
+  const notes = Array.isArray(bookmark.notes) ? bookmark.notes : [];
 
   return (
     <div
@@ -60,19 +61,19 @@ export function BookmarkCard({ bookmark, onEdit }: BookmarkCardProps) {
             </div>
           )}
           
-          {bookmark.notes.length > 0 && (
+          {notes.length > 0 && (
             <div className="mt-3">
               <button
                 onClick={() => setShowNotes(!showNotes)}
                 className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
               >
                 <MessageCircle className="w-4 h-4" />
-                {bookmark.notes.length} note{bookmark.notes.length !== 1 ? 's' : ''}
+                {notes.length} note{notes.length !== 1 ? 's' : ''}
               </button>
               
               {showNotes && (
                 <div className="mt-2 space-y-2">
-                  {bookmark.notes.map(note => (
+                  {notes.map(note => (
                     <div key={note.id} className="bg-gray-50 rounded p-2">
                       <h4 className="text-sm font-medium">{note.title}</h4>
                       <p className="text-sm text-gray-600 mt-1">{note.content}</p>
