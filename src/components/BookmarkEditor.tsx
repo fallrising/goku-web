@@ -18,8 +18,8 @@ export function BookmarkEditor({ bookmark, onClose }: BookmarkEditorProps) {
     title: bookmark.title,
     url: bookmark.url,
     description: bookmark.description,
-    category: bookmark.category.id,
-    tags: bookmark.tags.map(t => t.id),
+    category: bookmark.category?.id ?? categories[0]?.id,
+    tags: bookmark.tags?.map(t => t.id) ?? [],
     notes: bookmark.notes || ''
   });
 

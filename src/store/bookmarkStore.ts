@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { type Bookmark, type Category, type Tag, type PaginationState } from '../types/bookmark';
 import { bookmarkApi } from '../services/api';
+import { getFaviconUrl } from '../lib/utils';
 
 interface BookmarkStore {
   bookmarks: Bookmark[];
@@ -81,11 +82,18 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
     }
   },
 
-  addBookmark: async (bookmark) => {
+  addBookmark: async (bookmark: Bookmark) => {
     try {
-      const newBookmark = await bookmarkApi.create(bookmark);
+      const newBookmark = {
+        ...bookmark,
+        createdAt: new Date().toISOString(),
+        lastVisited: new Date().toISOString(),
+        favicon: getFaviconUrl(bookmark.url || '')
+      };
+      
+      const created = await bookmarkApi.create(newBookmark);
       set((state) => ({
-        bookmarks: [...state.bookmarks, newBookmark],
+        bookmarks: [...state.bookmarks, created],
       }));
     } catch (error) {
       console.error('Failed to add bookmark:', error);
@@ -103,12 +111,25 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
     }
   },
 
-  updateBookmark: async (id, updatedBookmark) => {
+  updateBookmark: async (id: string, updatedBookmark: Partial<Bookmark>) => {
     try {
-      const updated = await bookmarkApi.update(id, updatedBookmark);
+      const currentBookmark = get().bookmarks.find(b => b.id === id);
+      const bookmarkToUpdate = {
+        ...currentBookmark, // Preserve all existing fields
+        ...updatedBookmark, // Apply updates
+        createdAt: currentBookmark?.createdAt || new Date().toISOString(),
+        lastVisited: new Date().toISOString(),
+        // Keep existing favicon or generate new one if URL changed
+        favicon: updatedBookmark.url !== currentBookmark?.url
+          ? getFaviconUrl(updatedBookmark.url || '')
+          : currentBookmark?.favicon
+      };
+      
+      const updatedData = await bookmarkApi.update(id, bookmarkToUpdate);
+      
       set((state) => ({
-        bookmarks: state.bookmarks.map((b) =>
-          b.id === id ? { ...b, ...updated } : b
+        bookmarks: state.bookmarks.map((bookmark) =>
+          bookmark.id === id ? { ...bookmark, ...updatedData } : bookmark
         ),
       }));
     } catch (error) {

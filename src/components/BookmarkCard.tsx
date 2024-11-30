@@ -1,92 +1,104 @@
-import { useRef, useState } from 'react';
-import { MoreVertical } from 'lucide-react';
+import React from 'react';
 import { type Bookmark } from '../types/bookmark';
-import { formatDate } from '../lib/utils';
-import { BookmarkMenu } from './BookmarkMenu';
-import { BookmarkEditor } from './BookmarkEditor';
-import { useClickOutside } from '../hooks/useClickOutside';
+import { cn } from '../lib/utils';
+import { Edit, Trash2, MessageCircle } from 'lucide-react';
+import { useBookmarkStore } from '../store/bookmarkStore';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
+  onEdit: (bookmark: Bookmark) => void;
 }
 
-export function BookmarkCard({ bookmark }: BookmarkCardProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside(menuRef, () => setIsMenuOpen(false));
+export function BookmarkCard({ bookmark, onEdit }: BookmarkCardProps) {
+  const { removeBookmark } = useBookmarkStore();
+  const [showNotes, setShowNotes] = React.useState(false);
 
   return (
-    <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src={bookmark.favicon}
-              alt=""
-              className="w-6 h-6 rounded"
-            />
-            <div>
-              <h3 className="font-medium text-gray-900 line-clamp-1">{bookmark.title}</h3>
-              <a
-                href={bookmark.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-gray-500 hover:text-blue-600 line-clamp-1"
-              >
-                {bookmark.url}
-              </a>
-            </div>
-          </div>
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-            <BookmarkMenu
-              bookmarkId={bookmark.id}
-              isOpen={isMenuOpen}
-              onClose={() => setIsMenuOpen(false)}
-              onEdit={() => setIsEditing(true)}
-            />
-          </div>
-        </div>
-
-        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{bookmark.description}</p>
-
-        {bookmark.notes && (
-          <div 
-            className="mt-4 text-sm text-gray-600 border-t border-gray-100 pt-4"
-            dangerouslySetInnerHTML={{ __html: bookmark.notes }}
+    <div
+      className={cn(
+        'group relative bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4',
+        'border border-gray-200'
+      )}
+      style={bookmark.customStyle?.container}
+    >
+      <div className="flex items-start gap-3">
+        {bookmark.favicon && (
+          <img
+            src={bookmark.favicon}
+            alt=""
+            className="w-6 h-6 rounded"
           />
         )}
+        
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-gray-900 truncate" style={bookmark.customStyle?.title}>
+            <a href={bookmark.url} target="_blank" rel="noopener noreferrer">
+              {bookmark.title}
+            </a>
+          </h3>
+          
+          {bookmark.description && (
+            <p 
+              className="mt-1 text-sm text-gray-500 line-clamp-2" 
+              style={bookmark.customStyle?.description}
+            >
+              {bookmark.description}
+            </p>
+          )}
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex gap-2">
-            {bookmark.tags.map((tag) => (
-              <span
-                key={tag.id}
-                className={`px-2 py-0.5 rounded-full text-xs font-medium bg-${tag.color}-100 text-${tag.color}-600`}
+          {bookmark.tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {bookmark.tags.map(tag => (
+                <span
+                  key={tag.id}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                  style={{ backgroundColor: tag.color + '20', color: tag.color }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {bookmark.notes.length > 0 && (
+            <div className="mt-3">
+              <button
+                onClick={() => setShowNotes(!showNotes)}
+                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
               >
-                {tag.name}
-              </span>
-            ))}
-          </div>
-          <div className="text-xs text-gray-500">
-            {formatDate(bookmark.createdAt)}
-          </div>
+                <MessageCircle className="w-4 h-4" />
+                {bookmark.notes.length} note{bookmark.notes.length !== 1 ? 's' : ''}
+              </button>
+              
+              {showNotes && (
+                <div className="mt-2 space-y-2">
+                  {bookmark.notes.map(note => (
+                    <div key={note.id} className="bg-gray-50 rounded p-2">
+                      <h4 className="text-sm font-medium">{note.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{note.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {isEditing && (
-        <BookmarkEditor
-          bookmark={bookmark}
-          onClose={() => setIsEditing(false)}
-        />
-      )}
-    </>
+      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => onEdit(bookmark)}
+          className="p-1 text-gray-400 hover:text-gray-600"
+        >
+          <Edit className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => removeBookmark(bookmark.id)}
+          className="p-1 text-gray-400 hover:text-red-600"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   );
 }
